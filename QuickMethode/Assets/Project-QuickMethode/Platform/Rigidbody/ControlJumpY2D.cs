@@ -12,6 +12,7 @@ public class ControlJumpY2D : MonoBehaviour
     [SerializeField] [Min(0)] private float m_jumpForce = 10f;
     [SerializeField] [Min(0)] private float m_jumpRatio = 1f;
     [SerializeField] [Min(1)] private int m_jumpUpdate = 2;
+    [SerializeField] [Min(0)] private int m_jumpUpdateMin = 0;
 
     private float JumpForceCurrent => m_jumpForce * m_jumpRatio;
 
@@ -19,6 +20,7 @@ public class ControlJumpY2D : MonoBehaviour
     private bool m_jumpContinue = false;
     private bool m_jumpUp = false;
     private bool m_jumpKeep = false;
+    private bool m_jumpShort = false;
 
     private Coroutine m_iSetJumpContinue;
 
@@ -88,6 +90,9 @@ public class ControlJumpY2D : MonoBehaviour
             //Jump Hold optional!!
             return;
 
+        if (m_jumpShort)
+            return;
+
         if (m_rigidbody.velocity.y > 0 && !m_jumpKeep)
         {
             //Drag Down in middle!!
@@ -112,6 +117,9 @@ public class ControlJumpY2D : MonoBehaviour
         if (m_iSetJumpContinue != null)
             StopCoroutine(m_iSetJumpContinue);
         m_iSetJumpContinue = StartCoroutine(ISetJumpContinue());
+
+        if (m_jumpUpdateMin > 0)
+            StartCoroutine(ISetJumpShort());
     } //Event Update!!
 
     private IEnumerator ISetJumpContinue()
@@ -122,6 +130,16 @@ public class ControlJumpY2D : MonoBehaviour
             yield return new WaitForFixedUpdate();
 
         m_jumpContinue = false;
+    }
+
+    private IEnumerator ISetJumpShort()
+    {
+        m_jumpShort = true;
+
+        for (int Fixed = 0; Fixed < m_jumpUpdateMin; Fixed++)
+            yield return new WaitForFixedUpdate();
+
+        m_jumpShort = false;
     }
 
     public void SetEventHold()

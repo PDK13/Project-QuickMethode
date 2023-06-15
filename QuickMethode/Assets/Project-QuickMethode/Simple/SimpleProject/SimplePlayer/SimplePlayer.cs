@@ -1,4 +1,5 @@
 using QuickMethode;
+using System.Collections;
 using UnityEngine;
 
 public class SimplePlayer : MonoBehaviour
@@ -17,8 +18,12 @@ public class SimplePlayer : MonoBehaviour
 
     private void Start()
     {
+        Application.targetFrameRate = 60;
+
         m_bodyControlX = GetComponent<ControlMoveX2D>();
         m_bodyControlY = GetComponent<ControlJumpY2D>();
+
+        StartCoroutine(ISetAutoJump());
     }
 
     private void Update()
@@ -82,6 +87,20 @@ public class SimplePlayer : MonoBehaviour
     private void OnCollisionExit2D(Collision2D collision)
     {
         m_ground = false;
+    }
+
+    private IEnumerator ISetAutoJump()
+    {
+        do
+        {
+            yield return new WaitUntil(() => m_ground);
+
+            yield return new WaitForSeconds(2f);
+
+            m_bodyControlY.SetEventClick();
+            m_posYEnd = this.transform.position.y;
+        }
+        while (true);
     }
 
     private void OnDrawGizmos()
